@@ -15,12 +15,21 @@
 
 # # Imports and setup
 
+# +
 import numpy as np
 import pandas as pd
 import json
 import networkx as nx
 import matplotlib.pyplot as plt
 
+# mongoDB
+import pymongo
+from pymongo import MongoClient
+client = MongoClient('localhost', 27017)
+records = client.discussions['wiki-conv']
+
+
+# -
 
 # # Getting article data
 
@@ -42,13 +51,15 @@ def clean_article_data(df):
     return df
 
 
-def get_article_data(file_path, should_clean_data=True):
-    df = pd.read_json(file_path, lines=True, orient='records')
+def get_article_data(page_id: str, should_clean_data=True):
+    # df = pd.read_json(file_path, lines=True, orient='records')
+    df = pd.DataFrame(records.find({"pageId": page_id}).sort("timestamp", pymongo.ASCENDING))
     return clean_article_data(df) if should_clean_data else df
+    
 
-# input file: all the records for a discussion page from the wiki conv dataset
+# input data: all the actions for a discussion page from the wiki conv dataset
 # https://github.com/conversationai/wikidetox/tree/master/wikiconv
-df = get_article_data("out_bruni.json")
+df = get_article_data("687")
 # -
 
 # # Analyzing article data
