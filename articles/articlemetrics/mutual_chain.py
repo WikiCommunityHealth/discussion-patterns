@@ -42,7 +42,7 @@ class MutualChain(Metric):
     for adj in self.G[node]:
       if not self.visited[adj]:
         try:
-          if last != None and self.G.nodes[last] != {} and self.G.nodes[last]['user'] == self.G.nodes[adj]['user']:
+          if last != None and self.G.nodes[last] != {} and self.G.nodes[last]['user'] == self.G.nodes[adj]['user'] and self.G.nodes[last]['user'] != self.G.nodes[node]['user']:
             has_mutual_response = True
             if timestamp_begin_chain == None:
               timestamp_begin_chain = self.G.nodes[last]['timestamp']
