@@ -1,6 +1,8 @@
 import json
 import datetime
 from pymongo import MongoClient
+from multiprocessing import Pool
+import os
 
 from articlemetrics import NewUsersByMonth, ActionsType, MutualChain
 
@@ -12,9 +14,10 @@ def date_hook(json_dict):
   return json_dict
 
 def send_data(data):
-  client = MongoClient('localhost', 27017)
-  infos = client.articles.test
-  result = infos.insert_many(data)
+  if data != []:
+    client = MongoClient('localhost', 27017)
+    infos = client.articles.test
+    result = infos.insert_many(data)
 
 def analyze_wiki_conv_file(file_path):
   with open(file_path) as file:
@@ -37,7 +40,7 @@ def analyze_wiki_conv_file(file_path):
         print(last_line_page_id, num_lines_current_discussion_page)
         print(m_new_users_by_month.calculate())
         print(m_actions_type.calculate())
-        print(m_mutual_chains.calculate())
+        send_data(m_mutual_chains.calculate())
 
         # STEP #2: recreate structures for metrics calculation
         num_lines_current_discussion_page = 0
@@ -46,14 +49,14 @@ def analyze_wiki_conv_file(file_path):
         m_mutual_chains.reset()
 
       # process only a single page
-      if record['pageId'] == '1000009':
-        break
+      # if record['pageId'] == '1000009':
+      #   break
 
       # get metadata about current line
       username = ''
-      if 'text' in record['user']:
+      if 'user' in record and 'text' in record['user']:
         username = record['user']['text']
-      elif 'ip' in record['user']:
+      elif 'user' in record and 'ip' in record['user']:
         username = record['user']['ip']
       else:
         username = 'unknown'
@@ -78,5 +81,14 @@ def analyze_wiki_conv_file(file_path):
 
 if __name__ == "__main__":
   # file_paths = ['0-502.json', '503-999.json']
-  file_paths = ['filosofia.json']
-  analyze_wiki_conv_file(file_paths[0])
+  # file_paths = ['../../it-splitted/it-part0.json']
+  # analyze_wiki_conv_file(file_paths[0])
+  output = []
+
+  for root, dirs, files in os.walk("../../it-splitted"):
+    for filename in files:
+      if filename[0:2] == 'it':
+        output.append(f"../../it-splitted/{filename}")
+
+  with Pool(processes=4) as pool:        
+    pool.map(analyze_wiki_conv_file, output)
