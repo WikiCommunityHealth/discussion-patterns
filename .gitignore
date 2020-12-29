@@ -2,6 +2,7 @@
 dataset/
 .vscode/
 *.ipynb
+*.json
 config.py
 
 # Byte-compiled / optimized / DLL files
