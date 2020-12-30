@@ -17,7 +17,7 @@ def send_data(data):
   if data != []:
     client = MongoClient('localhost', 27017)
     infos = client.articles.test
-    result = infos.insert_many(data)
+    result = infos.insert_one(data)
 
 def analyze_wiki_conv_file(file_path):
   with open(file_path) as file:
@@ -35,22 +35,26 @@ def analyze_wiki_conv_file(file_path):
       record = json.loads(line, object_hook=date_hook) 
       is_new_discussion_page = last_line_page_id != record['pageId']
 
-      if is_new_discussion_page:
+      if is_new_discussion_page and last_line_page_id != '-1':
         # STEP #1: save result from previous discussione page to db
         print(last_line_page_id, num_lines_current_discussion_page)
-        print(m_new_users_by_month.calculate())
-        print(m_actions_type.calculate())
-        send_data(m_mutual_chains.calculate())
+        # print(m_new_users_by_month.calculate())
+        # print(m_actions_type.calculate())
+        # send_data(m_mutual_chains.calculate())
+        send_data({
+          'pageId': int(last_line_page_id),
+          'numActions': num_lines_current_discussion_page,
+          'actionsType': m_actions_type.calculate(),
+          'newUsersByMonth': m_new_users_by_month.calculate(),
+          'mutualChains': m_mutual_chains.calculate(),
+          'numMutualChains': m_mutual_chains.num_chains
+        })
 
         # STEP #2: recreate structures for metrics calculation
         num_lines_current_discussion_page = 0
         m_new_users_by_month.reset()
         m_actions_type.reset()
         m_mutual_chains.reset()
-
-      # process only a single page
-      # if record['pageId'] == '1000009':
-      #   break
 
       # get metadata about current line
       username = ''
@@ -73,18 +77,26 @@ def analyze_wiki_conv_file(file_path):
 
     # last discussion page
     print(last_line_page_id, num_lines_current_discussion_page)
-    print(m_new_users_by_month.calculate())
-    print(m_actions_type.calculate())
+    # print(m_new_users_by_month.calculate())
+    # print(m_actions_type.calculate())
     # print(m_mutual_chains.calculate())
-    send_data(m_mutual_chains.calculate())
+    # send_data(m_mutual_chains.calculate())
+    send_data({
+      'pageId': int(last_line_page_id),
+      'numActions': num_lines_current_discussion_page,
+      'actionsType': m_actions_type.calculate(),
+      'newUsersByMonth': m_new_users_by_month.calculate(),
+      'mutualChains': m_mutual_chains.calculate(),
+      'numMutualChains': m_mutual_chains.num_chains
+    })
 
 
 if __name__ == "__main__":
-  # file_paths = ['0-502.json', '503-999.json']
+  # file_paths = ['data/filosofia.json', 'data/0-502.json', 'data/503-999.json']
   # file_paths = ['../../it-splitted/it-part0.json']
   # analyze_wiki_conv_file(file_paths[0])
-  output = []
 
+  output = []
   for root, dirs, files in os.walk("../../it-splitted"):
     for filename in files:
       if filename[0:2] == 'it':
