@@ -7,5 +7,5 @@ class Metric(ABC):
     pass
 
   @abstractmethod
-  def calculate(self):
+  def calculate(self, page_id):
     pass
