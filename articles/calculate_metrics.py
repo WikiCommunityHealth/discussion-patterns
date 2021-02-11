@@ -1,11 +1,14 @@
 import json
 import datetime
 import sqlite3
-import os
 import argparse
 import gzip
 
-from talkpage_metrics import MetricDB, NewUsersByMonth, ActionsType, MutualChain
+# project specific
+
+from metric_controller import MetricController
+import outputter
+import utils
 
 
 def process_file(file_path, input_compression):
@@ -15,55 +18,40 @@ def process_file(file_path, input_compression):
     elif input_compression == 'gzip':
         with gzip.open(file_path, mode='rt', newline='\n') as file:
             process_lines(file.readlines())
-        
+
 
 def process_lines(lines):
-    ...
+    records = (json.loads(line, object_hook=utils.date_hook) for line in lines)
 
+    metrics = MetricController()
 
-def date_hook(json_dict):
-    try:
-        json_dict['timestamp'] = datetime.datetime.strptime(
-            json_dict['timestamp'], "%Y-%m-%dT%H:%M:%SZ")
-    except:
-        pass
-    return json_dict
+    last_line_page_id = '-1'
+    is_new_discussion_page = True
+    num_lines_current_discussion_page = 0
 
+    for record in records:
+        is_new_discussion_page = last_line_page_id != record['pageId']
 
-def send_page_data(data):
-    conn = sqlite3.connect('test.db', uri=True)
+        if is_new_discussion_page and last_line_page_id != '-1':
+            # STEP #1: save result from previous discussione page to db
+            metrics.calculate_and_send(last_line_page_id)
 
-    table_name = 'talkpage_metrics'
-    query = ("CREATE TABLE IF NOT EXISTS " + table_name +
-             " (page_id integer, page_title text, abs_value real, rel_value real, metric_name text, year_month text, PRIMARY KEY (page_id, metric_name, year_month))")
-    conn.execute(query)
-    # conn.commit()
+            num_lines_current_discussion_page = 0
 
-    conn.executemany(
-        "INSERT INTO " + table_name + " values (?, ?, ?, ?, ?, ?)",
-        map(MetricDB.unpack, data)
-    )
+        # get metadata about current line
+        username = utils.get_username(record)
+        current_month_year = utils.get_year_month_from_timestamp(
+            record['timestamp'])
 
-    conn.commit()
-    conn.close()
+        # add info to metrics calculators
+        metrics.add_record(record)
 
+        num_lines_current_discussion_page += 1
+        last_line_page_id = record['pageId']
 
-def send_user_data(data):
-    conn = sqlite3.connect('test.db', uri=True)
-
-    table_name = 'user_metrics'
-    query = ("CREATE TABLE IF NOT EXISTS " + table_name +
-             " (user_id integer, username text, abs_value real, rel_value real, metric_name text, year_month text, PRIMARY KEY (page_id, metric_name, year_month))")
-    conn.execute(query)
-    # conn.commit()
-
-    conn.executemany(
-        "INSERT INTO " + table_name + " values (?, ?, ?, ?, ?, ?)",
-        map(MetricDB.unpack, data)
-    )
-
-    conn.commit()
-    conn.close()
+    # calculate metrics for the last discussion page and
+    # send whatever has not been send to the database
+    metrics.calculate_and_send(last_line_page_id, force_send=True)
 
 
 def analyze_wiki_conv_file(file_path):
@@ -82,7 +70,7 @@ def analyze_wiki_conv_file(file_path):
         # m_mutual_chains = MutualChain()
 
         for line in file:
-            record = json.loads(line, object_hook=date_hook)
+            record = json.loads(line, object_hook=utils.date_hook)
             is_new_discussion_page = last_line_page_id != record['pageId']
 
             if is_new_discussion_page and last_line_page_id != '-1':
@@ -118,7 +106,8 @@ def analyze_wiki_conv_file(file_path):
             else:
                 username = 'unknown'
 
-            current_month_year = f"{record['timestamp'].month}/{record['timestamp'].year}"
+            current_month_year = utils.get_year_month_from_timestamp(
+                record['timestamp'])
 
             # add info to metrics calculators
             # m_new_users_by_month.add_info(username, current_month_year)
@@ -161,12 +150,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     process_file(args.file_path, args.compression)
-    # file_paths = [
-    #   'data/filosofia.json',
-    #   'data/0-502.json',
-    #   'data/503-999.json',
-    #   '../../it-splitted/it-part0.json'
-    #   ]
-
-    # analyze_wiki_conv_file(file_paths[1])
-    # analyze_wiki_conv_file(args.file)
