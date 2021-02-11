@@ -3,6 +3,7 @@ dataset/
 .vscode/
 *.ipynb
 *.json
+*.gz
 *.db
 config.py
 
