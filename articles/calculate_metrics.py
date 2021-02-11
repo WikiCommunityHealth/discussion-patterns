@@ -8,6 +8,19 @@ import gzip
 from talkpage_metrics import MetricDB, NewUsersByMonth, ActionsType, MutualChain
 
 
+def process_file(file_path, input_compression):
+    if input_compression == None:
+        with open(file_path) as file:
+            process_lines(file.readlines())
+    elif input_compression == 'gzip':
+        with gzip.open(file_path, mode='rt', newline='\n') as file:
+            process_lines(file.readlines())
+        
+
+def process_lines(lines):
+    ...
+
+
 def date_hook(json_dict):
     try:
         json_dict['timestamp'] = datetime.datetime.strptime(
@@ -134,20 +147,20 @@ def analyze_wiki_conv_file(file_path):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "file",
+        "file_path",
         help="dataset file to analyze",
         type=str
     )
     parser.add_argument(
-        "input_compression",
+        "-c",
+        "--compression",
         help="compression used for input files",
         type=str,
         choices=[None, 'gzip']
     )
     args = parser.parse_args()
 
-    print(args.file, args.input_compression)
-
+    process_file(args.file_path, args.compression)
     # file_paths = [
     #   'data/filosofia.json',
     #   'data/0-502.json',
