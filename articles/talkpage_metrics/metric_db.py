@@ -1,8 +1,10 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class MetricDB:
     """Class for keeping track of an item in inventory."""
+
     page_id: int
     page_title: str
     abs_value: float
@@ -17,5 +19,5 @@ class MetricDB:
             self.abs_value,
             self.rel_value,
             self.metric_name,
-            self.year_month
+            self.year_month,
         )

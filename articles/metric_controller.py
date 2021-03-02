@@ -1,5 +1,6 @@
-from talkpage_metrics import MetricDB, NewUsersByMonth, ActionsType, MutualChain
-import outputter
+from typing import Any, Dict
+from .talkpage_metrics import ActionsType, NewUsers, # MutualChain
+from . import outputter, utils
 
 
 class MetricController:
@@ -8,21 +9,27 @@ class MetricController:
         self.MAX_LEN_OUTPUT_LIST = 50
 
         self.m_actions_type = ActionsType()
+        self.m_new_users = NewUsers()
 
-    def add_record(self, record: dict):
+    def add_record(self, record: Dict[str, Any]):
         """
         Add new information to metrics for the current page
         """
-        self.m_actions_type.add_info(record['type'])
+        username: str = utils.get_username(record)
+        current_month_year: str = utils.get_year_month_from_timestamp(
+            record["timestamp"]
+        )
 
-    def calculate_and_send(self, pageId: str, force_send=False):
+        self.m_actions_type.add_info(record["type"])
+        self.m_new_users.add_info(username, current_month_year)
+
+    def calculate_and_send(self, page_id: int, force_send: bool = False):
         """
         Calculate and send the result for the record received until
         the last call of this method
         """
-        self.output_data_pages.extend(
-            self.m_actions_type.calculate(pageId)
-        )
+        self.output_data_pages.extend(self.m_actions_type.calculate(page_id))
+        self.output_data_pages.extend(self.m_new_users.calculate(page_id))
 
         # make as few writes as possible to the database in order to
         # speed up the process
