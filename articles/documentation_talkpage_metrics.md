@@ -21,20 +21,19 @@ Each record in the table has the following structure:
 - number of deletions
 - number of restorations
 - max depth of the conversation
-
+- number of toxic messages
+- number of severe toxic messages
 
 
 
 ### List of metrics not implemented
 - number of actions by bots
-
 - number of revisions
 - number of mutual chains with length >=3
 - number of mutual chains with length >=5
 - number of mutual chains with length >=7
 - number of mutual chains with length >=9
-- number of toxic messages
-- number of super toxic messages
-- h-index: h messages with at least depth h
+- h-index: maximum number h s.t. there are >= h messages with depth >= h
+- delta-h-index
 - u-index: u users with at least u messages
-- numeber of messages at a current indentation by month
+- delta max depth: difference between the last month and the current one

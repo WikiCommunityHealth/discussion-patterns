@@ -9,7 +9,7 @@ def date_hook(json_dict: Dict[str, Any]) -> Dict[str, Any]:
             json_dict["timestamp"] = datetime.datetime.strptime(
                 str(json_dict["timestamp"]), "%Y-%m-%dT%H:%M:%SZ"
             )
-        except:
+        except Exception:
             print("Error parsing datetime in input file")
     return json_dict
 

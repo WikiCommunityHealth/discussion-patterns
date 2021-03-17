@@ -22,7 +22,7 @@ def send_page_data(data: Sequence[MetricDB]) -> None:
         )
 
         conn.commit()
-    except:
+    except Exception:
         for el in data:
             print(el.metric_name, el.year_month, el.abs_actual_value, el.abs_cumulative_value)
 

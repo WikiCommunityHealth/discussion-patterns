@@ -5,16 +5,18 @@ from ..database.outputter import send_page_data
 from .metric_action_type import MetricActionType
 from .metric_user_involved import MetricUserInvolved
 from .metric_discussion_depth import MetricDiscussionDepth
+from .metric_toxicity import MetricToxicity
 
 
 class MetricController:
     def __init__(self):
         self.output_data_pages: List[MetricDB] = []
-        self.MAX_LEN_OUTPUT_LIST = 1000
+        self.MAX_LEN_OUTPUT_LIST = 100000
 
         self.m_action_type = MetricActionType()
         self.m_user_involved = MetricUserInvolved()
         self.m_discussion_depth = MetricDiscussionDepth()
+        self.m_toxicity = MetricToxicity()
 
     def add_record(self, record: Dict[str, Any]):
         """
@@ -33,6 +35,9 @@ class MetricController:
                 int(record["indentation"]), current_year_month
             )
 
+        if "score" in record:
+            self.m_toxicity.add_info(record["score"], current_year_month)
+
     def calculate_and_send(self, page_id: int, force_send: bool = False):
         """
         Calculate and send the result for the record received until
@@ -41,6 +46,7 @@ class MetricController:
         self.output_data_pages.extend(self.m_action_type.calculate(page_id))
         self.output_data_pages.extend(self.m_user_involved.calculate(page_id))
         self.output_data_pages.extend(self.m_discussion_depth.calculate(page_id))
+        self.output_data_pages.extend(self.m_toxicity.calculate(page_id))
 
         # make as few writes as possible to the database in order to
         # speed up the process
@@ -57,3 +63,4 @@ class MetricController:
         self.m_action_type.reset()
         self.m_user_involved.reset()
         self.m_discussion_depth.reset()
+        self.m_toxicity.reset()

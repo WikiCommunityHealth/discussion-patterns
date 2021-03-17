@@ -18,8 +18,10 @@ class MetricDiscussionDepth(Metric):
 
     def calculate(self, page_id: int) -> List[MetricDB]:
         output: List[MetricDB] = []
+        current_max_depth = -1
 
         for year_month, value in self.depth_by_month.items():
+            current_max_depth = max(current_max_depth, value)
             output.append(
                 MetricDB(
                     page_id=page_id,
@@ -27,8 +29,8 @@ class MetricDiscussionDepth(Metric):
                     year_month=year_month,
                     abs_actual_value=value,
                     rel_actual_value=value / self.max_depth,
-                    abs_cumulative_value=value,
-                    rel_cumulative_value=value / self.max_depth,
+                    abs_cumulative_value=current_max_depth,
+                    rel_cumulative_value=current_max_depth / self.max_depth,
                 )
             )
 

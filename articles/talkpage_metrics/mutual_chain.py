@@ -61,7 +61,7 @@ class MutualChain(Metric):
                         )
                     else:
                         self.dfs_rec(adj, node, False, None, 2)
-                except:
+                except Exception:
                     print(last, self.G.nodes[last])
                     print(adj, self.G.nodes[adj])
 
