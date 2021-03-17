@@ -1,0 +1,45 @@
+from typing import Dict, List
+from .metric import Metric
+from ..database.metric_db import MetricDB
+
+
+class MetricDiscussionDepth(Metric):
+    """
+    docstring
+    """
+
+    def __init__(self):
+        self.depth_by_month: Dict[str, int] = {}
+        self.max_depth = -1
+
+    def reset(self):
+        self.depth_by_month.clear()
+        self.max_depth = -1
+
+    def calculate(self, page_id: int) -> List[MetricDB]:
+        output: List[MetricDB] = []
+
+        for year_month, value in self.depth_by_month.items():
+            output.append(
+                MetricDB(
+                    page_id=page_id,
+                    metric_name="max_depth",
+                    year_month=year_month,
+                    abs_actual_value=value,
+                    rel_actual_value=value / self.max_depth,
+                    abs_cumulative_value=value,
+                    rel_cumulative_value=value / self.max_depth,
+                )
+            )
+
+        return output
+
+    def add_info(self, indentation: int, current_year_month: str):
+        # TODO: we must consider DELETION and RESTORATIONS
+        if current_year_month not in self.depth_by_month:
+            self.depth_by_month[current_year_month] = indentation
+        else:
+            self.depth_by_month[current_year_month] = max(
+                self.depth_by_month[current_year_month], indentation
+            )
+        self.max_depth = max(self.max_depth, indentation)

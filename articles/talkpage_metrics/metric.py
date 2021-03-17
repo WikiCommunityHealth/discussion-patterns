@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import List
-from .metric_db import MetricDB
+from ..database.metric_db import MetricDB
 
 
 class Metric(ABC):

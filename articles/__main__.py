@@ -4,8 +4,10 @@ import gzip
 from typing import Dict, Generator, Any
 
 # project specific
-from .metric_controller import MetricController
+from .talkpage_metrics import MetricController
 from . import utils
+
+import time
 
 
 def process_file(file_path: str, input_compression: str) -> None:
@@ -24,14 +26,14 @@ def process_lines(lines: Generator[str, None, None]) -> None:
 
     metrics = MetricController()
 
-    last_line_page_id: str = "-1"
+    last_line_page_id: int = -1
     is_new_discussion_page: bool = True
     num_lines_current_discussion_page: int = 0
 
     for record in records:
-        is_new_discussion_page = last_line_page_id != record["pageId"]
+        is_new_discussion_page = last_line_page_id != int(record["pageId"])
 
-        if is_new_discussion_page and last_line_page_id != "-1":
+        if is_new_discussion_page and last_line_page_id != -1:
             # STEP #1: save result from previous discussione page to db
             metrics.calculate_and_send(last_line_page_id)
 
@@ -47,7 +49,7 @@ def process_lines(lines: Generator[str, None, None]) -> None:
         metrics.add_record(record)
 
         num_lines_current_discussion_page += 1
-        last_line_page_id = record["pageId"]
+        last_line_page_id = int(record["pageId"])
 
     # calculate metrics for the last discussion page and
     # send whatever has not been send to the database
@@ -145,4 +147,6 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
+    now = time.perf_counter()
     process_file(args.file_path, args.compression)
+    print(f"Elapsed time: {time.perf_counter()- now}")
