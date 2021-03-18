@@ -1,11 +1,11 @@
-# Project specific ingnores
-dataset/
+# Project specific ignores
 .vscode/
 *.ipynb
 *.json
 *.gz
 *.db
 config.py
+unitn-vpn.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

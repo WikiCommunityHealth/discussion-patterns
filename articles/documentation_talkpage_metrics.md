@@ -35,5 +35,5 @@ Each record in the table has the following structure:
 - number of mutual chains with length >=9
 - h-index: maximum number h s.t. there are >= h messages with depth >= h
 - delta-h-index
-- u-index: u users with at least u messages
+- u-index: maximum number u s.t. there are >= u users with >= u messages
 - delta max depth: difference between the last month and the current one
