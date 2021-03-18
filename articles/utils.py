@@ -15,7 +15,7 @@ def date_hook(json_dict: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def get_year_month_from_timestamp(timestamp: datetime.datetime) -> str:
-    return f"{timestamp.year}-{timestamp.month}"
+    return f"{timestamp.year}-{str(timestamp.month).rjust(2, '0')}"
 
 
 def get_username(record: Any) -> str:
