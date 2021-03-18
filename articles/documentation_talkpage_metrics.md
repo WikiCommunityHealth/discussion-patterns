@@ -1,4 +1,4 @@
-# Documentation Talkpage Matrics
+# Documentation Talkpage Metrics
 
 ### Table structure
 
@@ -23,8 +23,7 @@ Each record in the table has the following structure:
 - max depth of the conversation
 - number of toxic messages
 - number of severe toxic messages
-
-
+- number of revision comment with "vandalism" keyword
 
 ### List of metrics not implemented
 - number of actions by bots
@@ -37,3 +36,4 @@ Each record in the table has the following structure:
 - delta-h-index
 - u-index: maximum number u s.t. there are >= u users with >= u messages
 - delta max depth: difference between the last month and the current one
+- commenti all'interno di una catena mutua

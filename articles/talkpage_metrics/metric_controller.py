@@ -6,6 +6,7 @@ from .metric_action_type import MetricActionType
 from .metric_user_involved import MetricUserInvolved
 from .metric_discussion_depth import MetricDiscussionDepth
 from .metric_toxicity import MetricToxicity
+from .metric_vandalism import MetricVandalism
 
 
 class MetricController:
@@ -18,6 +19,7 @@ class MetricController:
         self.m_user_involved = MetricUserInvolved()
         self.m_discussion_depth = MetricDiscussionDepth()
         self.m_toxicity = MetricToxicity()
+        self.m_vandalism = MetricVandalism()
 
     def add_record(self, record: Dict[str, Any]):
         """
@@ -39,6 +41,9 @@ class MetricController:
         if "score" in record:
             self.m_toxicity.add_info(record["score"], current_year_month)
 
+        if "comment" in record:
+            self.m_vandalism.add_info(record["comment"], current_year_month)
+
     def calculate_and_send(self, page_id: int, force_send: bool = False):
         """
         Calculate and send the result for the record received until
@@ -48,6 +53,7 @@ class MetricController:
         self.output_data_pages.extend(self.m_user_involved.calculate(page_id))
         self.output_data_pages.extend(self.m_discussion_depth.calculate(page_id))
         self.output_data_pages.extend(self.m_toxicity.calculate(page_id))
+        self.output_data_pages.extend(self.m_vandalism.calculate(page_id))
 
         # make as few writes as possible to the database in order to
         # speed up the process
@@ -65,3 +71,5 @@ class MetricController:
         self.m_user_involved.reset()
         self.m_discussion_depth.reset()
         self.m_toxicity.reset()
+        self.m_vandalism.reset()
+

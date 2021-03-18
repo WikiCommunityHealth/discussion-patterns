@@ -71,7 +71,7 @@ if __name__ == "__main__":
 
     now = time.perf_counter()
     for file in tqdm(args.files):
-        print(f"Analyzing file {file}")
+        # print(f"Analyzing file {file}")
         process_file(file, args.compression, args.database)
 
     print(f"Elapsed time: {time.perf_counter() - now}")
