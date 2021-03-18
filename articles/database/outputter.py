@@ -1,10 +1,10 @@
 from typing import Sequence
-from .metric_db import MetricDB
 import sqlite3
+from .metric_db import MetricDB
 
 
-def send_page_data(data: Sequence[MetricDB]) -> None:
-    conn = sqlite3.connect("pages.db", uri=True)
+def send_page_data(data: Sequence[MetricDB], database_path: str) -> None:
+    conn = sqlite3.connect(database_path, uri=True)
 
     table_name = "talkpage_metrics"
     query = (

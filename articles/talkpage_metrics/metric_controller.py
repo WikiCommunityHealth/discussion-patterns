@@ -9,7 +9,8 @@ from .metric_toxicity import MetricToxicity
 
 
 class MetricController:
-    def __init__(self):
+    def __init__(self, database_path: str):
+        self.database_path = database_path
         self.output_data_pages: List[MetricDB] = []
         self.MAX_LEN_OUTPUT_LIST = 100000
 
@@ -51,7 +52,7 @@ class MetricController:
         # make as few writes as possible to the database in order to
         # speed up the process
         if (len(self.output_data_pages) > self.MAX_LEN_OUTPUT_LIST) or force_send:
-            send_page_data(self.output_data_pages)
+            send_page_data(self.output_data_pages, self.database_path)
             self.output_data_pages.clear()
 
         self.reset()

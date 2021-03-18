@@ -11,21 +11,21 @@ from . import utils
 import time
 
 
-def process_file(file_path: str, input_compression: str) -> None:
+def process_file(file_path: str, input_compression: str, database_path: str) -> None:
     if input_compression == None:
         with open(file_path) as file:
-            process_lines((line for line in file))
+            process_lines((line for line in file), database_path)
     elif input_compression == "gzip":
         with gzip.open(file_path, mode="rt", newline="\n") as file:
-            process_lines((line for line in file))
+            process_lines((line for line in file), database_path)
 
 
-def process_lines(lines: Generator[str, None, None]) -> None:
+def process_lines(lines: Generator[str, None, None], database_path: str) -> None:
     records: Generator[Dict[str, Any], None, None] = (
         json.loads(line.split("\t")[1], object_hook=utils.date_hook) for line in lines
     )
 
-    metrics = MetricController()
+    metrics = MetricController(database_path)
 
     last_line_page_id: int = -1
     is_new_discussion_page: bool = True
@@ -60,11 +60,18 @@ if __name__ == "__main__":
         type=str,
         choices=[None, "gzip"],
     )
+    parser.add_argument(
+        "-db",
+        "--database",
+        help="name of output db file",
+        type=str,
+        default="database.db"
+    )
     args = parser.parse_args()
 
     now = time.perf_counter()
     for file in tqdm(args.files):
         print(f"Analyzing file {file}")
-        process_file(file, args.compression)
+        process_file(file, args.compression, args.database)
 
     print(f"Elapsed time: {time.perf_counter() - now}")
