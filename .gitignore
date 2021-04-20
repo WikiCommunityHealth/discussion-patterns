@@ -4,6 +4,7 @@
 *.json
 *.gz
 *.db
+*.zip
 config.py
 unitn-vpn.sh
 
